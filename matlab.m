@@ -1,0 +1,36 @@
+clc; clear;
+
+%% Exporting data from file into matlab 
+%  We can do this by creating a table data type and assigning variables to
+%  its columns
+table_RL = readtable("Data/table_RL","VariableNamingRule","preserve");
+time_ms = table_RL.("Time (ms)");
+voltage_ch1 = table_RL.("Ch1 V");
+current_ch1 = table_RL.("Ch1 A");
+
+% Calculate instantaneous power and plot it
+p_insta = voltage_ch1.*current_ch1;
+figure(1); clf;
+plot(time_ms,voltage_ch1,"k-","LineWidth",1);
+grid on;
+title("Instantaneous Power Delivered from Source");
+xlabel("Time (ms)");
+ylabel("P_{insta} (W)");
+
+%% 
+X = fft(current_ch1);
+phase_shift = pi/4;
+w = 2*pi/length(i1_fft)*transpose([0:length(i1_fft)-1]);
+X_shift(1:(length(X)-1)/2) = X_shift(1:(length(X)-1)/2)*exp(i*phase_shift);
+X_shift((length(X)+1)/2+1:end) = X_shift((length(X)+1)/2+1:end)*exp(-i*phase_shift);
+X_2 = fftshift(X_shift);
+X2 = ifft(X_2);
+period = 0.0045e-3;
+fs = 1/period;
+freq = transpose(fs*(0:length(X)-1)/length(X));
+figure(2); clf;
+plot(freq,180/pi*angle(X),"k-",freq,180/pi*angle(X_2),"r--")
+xlim([length(X)-2000, length(X)]);
+figure(3);clf;
+plot(time_ms,current_ch1,'k-',time_ms,X2,'r--');
+
